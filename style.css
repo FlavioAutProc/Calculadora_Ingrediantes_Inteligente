@@ -1,0 +1,506 @@
+
+        :root {
+            /* Cores claras (modo padrão) */
+            --primary-color: #2c5e8c;
+            --secondary-color: #f5e6ca;
+            --accent-color: #e67e22;
+            --highlight-color: #e74c3c;
+            --success-color: #27ae60;
+            --text-color: #333333;
+            --light-gray: #f5f5f5;
+            --medium-gray: #dddddd;
+            --dark-gray: #555555;
+            --white: #ffffff;
+            --black: #000000;
+            
+            /* Cores específicas para cada modo */
+            --bread-color: #2c5e8c;
+            --cake-color: #8e44ad;
+            
+            /* Variáveis de layout */
+            --border-radius: 8px;
+            --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        /* Modo escuro - se preferido pelo sistema */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary-color: #3498db;
+                --secondary-color: #2c3e50;
+                --accent-color: #e67e22;
+                --highlight-color: #e74c3c;
+                --text-color: #ecf0f1;
+                --light-gray: #121212;
+                --medium-gray: #2c3e50;
+                --dark-gray: #bdc3c7;
+                --white: #1e1e1e;
+                --black: #ecf0f1;
+                
+                --bread-color: #3498db;
+                --cake-color: #9b59b6;
+            }
+            
+            body {
+                background-color: #121212;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--light-gray);
+            padding: 15px;
+            font-size: 16px;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: var(--white);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+
+        /* Sistema de modos */
+        .mode-selector {
+            display: flex;
+            margin-bottom: 25px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            border: 1px solid var(--medium-gray);
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            background-color: var(--light-gray);
+            color: var(--text-color);
+        }
+
+        .mode-btn.active {
+            background-color: var(--white);
+            color: var(--primary-color);
+        }
+
+        .mode-btn[data-mode="bread"] {
+            border-right: 1px solid var(--medium-gray);
+        }
+
+        .mode-btn[data-mode="bread"].active {
+            color: var(--bread-color);
+        }
+
+        .mode-btn[data-mode="cake"].active {
+            color: var(--cake-color);
+        }
+
+        /* Painéis de conteúdo */
+        .mode-panel {
+            display: none;
+        }
+
+        .mode-panel.active {
+            display: block;
+        }
+
+        /* Controles comuns */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            background-color: var(--white);
+            color: var(--text-color);
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.2);
+        }
+
+        /* Barra de carregamento */
+        .loading-bar {
+            height: 3px;
+            width: 0;
+            background: linear-gradient(to right, var(--highlight-color), var(--accent-color));
+            transition: width 0.3s;
+            margin-bottom: 15px;
+            border-radius: 3px;
+        }
+
+        /* Mensagens toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            max-width: 90%;
+            text-align: center;
+            box-shadow: var(--box-shadow);
+        }
+
+        /* Botões */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .btn-accent {
+            background-color: var(--accent-color);
+            color: var(--white);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: var(--white);
+        }
+
+        .btn-danger {
+            background-color: var(--highlight-color);
+            color: var(--white);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .btn-sm {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+
+        .btn-icon {
+            padding: 10px;
+            min-width: 40px;
+        }
+
+        /* Grupos de botões */
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Lista de ingredientes (modo bolo) */
+        .ingredients-list {
+            margin-top: 15px;
+        }
+
+        .ingredient-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+            padding: 12px;
+            background-color: var(--secondary-color);
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .ingredient-item:hover {
+            background-color: var(--light-gray);
+        }
+
+        .ingredient-item input {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        /* Tabelas */
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: var(--white);
+            position: sticky;
+            top: 0;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--secondary-color);
+        }
+
+        tr:hover {
+            background-color: var(--light-gray);
+        }
+
+        /* Favoritos */
+        .favorite-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--medium-gray);
+            transition: var(--transition);
+            padding: 5px;
+        }
+
+        .favorite-btn.active {
+            color: var(--accent-color);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            border-bottom: 1px dotted var(--dark-gray);
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--black);
+            color: var(--white);
+            text-align: center;
+            border-radius: var(--border-radius);
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9rem;
+            font-weight: normal;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Highlight animation */
+        .highlight {
+            animation: highlight 1s ease;
+        }
+
+        @keyframes highlight {
+            0% { background-color: var(--highlight-color); }
+            100% { background-color: inherit; }
+        }
+
+        /* Filtros e controles */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-container {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        /* Multiplicadores rápidos */
+        .quick-multipliers {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .quick-multipliers button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--secondary-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .quick-multipliers button:hover {
+            background-color: var(--accent-color);
+            color: var(--white);
+        }
+
+        /* Configurações padrão */
+        .default-settings {
+            background-color: var(--secondary-color);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+        }
+
+        .default-settings h3 {
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .mode-btn {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .ingredient-item {
+                flex-direction: column;
+            }
+
+            .ingredient-item input, 
+            .ingredient-item select {
+                width: 100%;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            th, td {
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                font-size: 15px;
+            }
+
+            .filter-bar {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .quick-multipliers {
+                flex-wrap: wrap;
+            }
+
+            .quick-multipliers button {
+                min-width: calc(33% - 8px);
+            }
+        }
+
+        /* Estilos para impressão */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            
+            .print-section, .print-section * {
+                visibility: visible;
+            }
+            
+            .print-section {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            
+            button, .mode-selector, .filter-bar {
+                display: none !important;
+            }
+            
+            table {
+                min-width: 100%;
+            }
+            
+            th {
+                background-color: var(--primary-color) !important;
+                color: var(--white) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }

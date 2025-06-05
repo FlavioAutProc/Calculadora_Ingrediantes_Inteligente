@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Premium de Receitas</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fas fa-calculator"></i> Calculadora Premium de Receitas</h1>
+        
+        <!-- Seletor de modo -->
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="bread">
+                <i class="fas fa-bread-slice"></i> Massas de Panificação
+            </button>
+            <button class="mode-btn" data-mode="cake">
+                <i class="fas fa-birthday-cake"></i> Bolos Personalizados
+            </button>
+        </div>
+        
+        <!-- Modo Massas de Panificação -->
+        <div id="bread-panel" class="mode-panel active">
+            <div class="filter-bar">
+                <div class="search-container">
+                    <input type="text" id="bread-search" placeholder="Buscar receita...">
+                </div>
+                <button id="toggle-favorites-bread" class="btn btn-outline btn-sm">
+                    <i class="fas fa-star"></i> Favoritos
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label for="recipe-select">Selecione uma receita:</label>
+                <select id="recipe-select">
+                    <option value="">-- Selecione --</option>
+                    <!-- Opções serão preenchidas via JavaScript -->
+                </select>
+            </div>
+            
+            <div id="bread-recipe-container" style="display: none;">
+                <div class="form-group">
+                    <label for="flour-input">Quantidade de farinha desejada (kg):</label>
+                    <input type="number" id="flour-input" min="0.1" step="0.1" placeholder="Digite a quantidade em kg">
+                    
+                    <div class="quick-multipliers">
+                        <button data-mult="0.5">½x</button>
+                        <button data-mult="2">2x</button>
+                        <button data-mult="5">5x</button>
+                    </div>
+                </div>
+                
+                <div class="loading-bar" id="bread-loading-bar"></div>
+                
+                <div class="print-section">
+                    <h2 id="recipe-title"></h2>
+                    <div class="table-container">
+                        <table id="ingredients-table">
+                            <thead>
+                                <tr>
+                                    <th>Ingrediente</th>
+                                    <th>Quantidade Original</th>
+                                    <th>Quantidade Ajustada <span class="tooltip">(?)
+                                        <span class="tooltip-text">Clique para converter unidades</span>
+                                    </span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="ingredients-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="calculate-bread" class="btn btn-primary">
+                        <i class="fas fa-calculator"></i> Calcular
+                    </button>
+                    <button id="reset-bread" class="btn btn-danger">
+                        <i class="fas fa-undo"></i> Resetar
+                    </button>
+                    <button id="save-bread" class="btn btn-success">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                    <button id="print-bread" class="btn btn-accent">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                    <button id="share-bread" class="btn btn-outline">
+                        <i class="fas fa-share-alt"></i> Compartilhar
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modo Bolos Personalizados -->
+        <div id="cake-panel" class="mode-panel">
+            <!-- Configurações padrão para bolos -->
+            <div class="default-settings">
+                <h3><i class="fas fa-cog"></i> Configurações Padrão</h3>
+                <div class="form-group">
+                    <label for="default-mix">Quantidade padrão da mistura pronta (kg):</label>
+                    <input type="number" id="default-mix" min="0.1" step="0.1" value="5">
+                </div>
+                <div class="form-group">
+                    <label for="default-milk">Quantidade padrão de leite (litros):</label>
+                    <input type="number" id="default-milk" min="0.1" step="0.1" value="2.5">
+                </div>
+                <div class="form-group">
+                    <label for="default-eggs">Quantidade padrão de ovos (unidades):</label>
+                    <input type="number" id="default-eggs" min="1" step="1" value="35">
+                </div>
+                <div class="form-group">
+                    <label>Ingredientes opcionais:</label>
+                    <div class="optional-ingredients">
+                        <label><input type="checkbox" id="use-ferment"> Usar fermento</label>
+                        <label><input type="checkbox" id="use-water"> Usar água</label>
+                        <label><input type="checkbox" id="use-extra-milk"> Usar leite extra</label>
+                    </div>
+                </div>
+                <button id="save-defaults" class="btn btn-success">
+                    <i class="fas fa-save"></i> Salvar Configurações
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label for="recipe-name">Nome da Receita:</label>
+                <input type="text" id="recipe-name" placeholder="Ex: Bolo de Chocolate">
+            </div>
+            
+            <div class="form-group">
+                <label for="desired-mix">Quantidade desejada de mistura pronta (kg):</label>
+                <input type="number" id="desired-mix" min="0.1" step="0.1" placeholder="Digite a quantidade em kg">
+                
+                <div class="quick-multipliers">
+                    <button data-mult="0.5">½x</button>
+                    <button data-mult="1">1x</button>
+                    <button data-mult="2">2x</button>
+                </div>
+            </div>
+            
+            <div class="loading-bar" id="cake-loading-bar"></div>
+            
+            <div class="button-group">
+                <button id="calculate-cake" class="btn btn-primary">
+                    <i class="fas fa-calculator"></i> Calcular
+                </button>
+                <button id="reset-cake" class="btn btn-danger">
+                    <i class="fas fa-undo"></i> Resetar
+                </button>
+            </div>
+            
+            <div id="cake-results" style="display: none;">
+                <h2 id="cake-recipe-title"></h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ingrediente</th>
+                                <th>Quantidade Padrão</th>
+                                <th>Quantidade Ajustada</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cake-results-body"></tbody>
+                    </table>
+                </div>
+                
+                <div class="button-group">
+                    <button id="print-cake" class="btn btn-accent">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                    <button id="share-cake" class="btn btn-outline">
+                        <i class="fas fa-share-alt"></i> Compartilhar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast"></div>
+
+   <script src="main.js"></script>
+</body>
+</html>
