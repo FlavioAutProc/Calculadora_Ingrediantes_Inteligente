@@ -2,180 +2,311 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Premium de Receitas</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PãoMaster - Calculadora de Receitas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1><i class="fas fa-calculator"></i> Calculadora Premium de Receitas</h1>
-        
-        <!-- Seletor de modo -->
-        <div class="mode-selector">
-            <button class="mode-btn active" data-mode="bread">
-                <i class="fas fa-bread-slice"></i> Massas de Panificação
-            </button>
-            <button class="mode-btn" data-mode="cake">
-                <i class="fas fa-birthday-cake"></i> Bolos Personalizados
-            </button>
-        </div>
-        
-        <!-- Modo Massas de Panificação -->
-        <div id="bread-panel" class="mode-panel active">
-            <div class="filter-bar">
-                <div class="search-container">
-                    <input type="text" id="bread-search" placeholder="Buscar receita...">
-                </div>
-                <button id="toggle-favorites-bread" class="btn btn-outline btn-sm">
-                    <i class="fas fa-star"></i> Favoritos
-                </button>
-            </div>
-            
-            <div class="form-group">
-                <label for="recipe-select">Selecione uma receita:</label>
-                <select id="recipe-select">
-                    <option value="">-- Selecione --</option>
-                    <!-- Opções serão preenchidas via JavaScript -->
-                </select>
-            </div>
-            
-            <div id="bread-recipe-container" style="display: none;">
-                <div class="form-group">
-                    <label for="flour-input">Quantidade de farinha desejada (kg):</label>
-                    <input type="number" id="flour-input" min="0.1" step="0.1" placeholder="Digite a quantidade em kg">
-                    
-                    <div class="quick-multipliers">
-                        <button data-mult="0.5">½x</button>
-                        <button data-mult="2">2x</button>
-                        <button data-mult="5">5x</button>
+    <div class="status-bar"></div>
+    
+    <div class="app-container">
+        <header class="app-header animate__animated animate__fadeInDown">
+            <div class="header-content">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <h1><i class="fas fa-bread-slice"></i> PãoMaster</h1>
+                        <p>Calculadora profissional de receitas</p>
+                    </div>
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
                     </div>
                 </div>
-                
-                <div class="loading-bar" id="bread-loading-bar"></div>
-                
-                <div class="print-section">
-                    <h2 id="recipe-title"></h2>
-                    <div class="table-container">
-                        <table id="ingredients-table">
-                            <thead>
-                                <tr>
-                                    <th>Ingrediente</th>
-                                    <th>Quantidade Original</th>
-                                    <th>Quantidade Ajustada <span class="tooltip">(?)
-                                        <span class="tooltip-text">Clique para converter unidades</span>
-                                    </span></th>
-                                </tr>
-                            </thead>
-                            <tbody id="ingredients-body"></tbody>
-                        </table>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Segmented Control for Navigation -->
+            <div class="segmented-control">
+                <div class="segment active" data-tab="calculator">
+                    <i class="fas fa-calculator"></i>
+                    <span>Calcular</span>
+                </div>
+                <div class="segment" data-tab="recipes">
+                    <i class="fas fa-book"></i>
+                    <span>Receitas</span>
+                </div>
+                <div class="segment" data-tab="saved">
+                    <i class="fas fa-star"></i>
+                    <span>Salvas</span>
+                </div>
+            </div>
+
+            <!-- Calculator Section -->
+            <section id="calculator-section">
+                <div class="card animate__animated animate__fadeIn">
+                    <div class="card-header">
+                        <div>
+                            <div class="card-title">
+                                <i class="fas fa-calculator"></i> Nova Receita
+                            </div>
+                            <div class="card-subtitle">Calcule quantidades com base na farinha</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="recipe-select">
+                            <i class="fas fa-list"></i> Selecione uma receita
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="recipe-select">
+                                <option value="">-- Selecione uma receita --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="flour-input">
+                            <i class="fas fa-weight-hanging"></i> Quantidade de farinha (kg)
+                        </label>
+                        <div class="input-wrapper">
+                            <input type="number" id="flour-input" min="0.1" step="0.1" placeholder="Ex: 5.0" inputmode="decimal">
+                        </div>
+                        
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" data-mult="0.5">
+                                <i class="fas fa-divide"></i>½x
+                            </button>
+                            <button class="quick-action-btn" data-mult="1.5">
+                                <i class="fas fa-plus"></i>1.5x
+                            </button>
+                            <button class="quick-action-btn" data-mult="2">
+                                <i class="fas fa-times"></i>2x
+                            </button>
+                            <button class="quick-action-btn" data-mult="5">
+                                <i class="fas fa-bolt"></i>5x
+                            </button>
+                        </div>
+                    </div>
+
+                    <button id="calculate-btn" class="btn btn-primary">
+                        <i class="fas fa-calculator"></i> Calcular Receita
+                        <i class="fas fa-arrow-right" style="margin-left: auto;"></i>
+                    </button>
+                </div>
+
+                <!-- Recent Calculations -->
+                <div class="card animate__animated animate__fadeIn" style="animation-delay: 100ms">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-history"></i> Cálculos Recentes
+                        </div>
+                    </div>
+                    <div id="recent-calculations">
+                        <div class="empty-state">
+                            <i class="fas fa-clock"></i>
+                            <p>Nenhum cálculo recente</p>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="button-group">
-                    <button id="calculate-bread" class="btn btn-primary">
-                        <i class="fas fa-calculator"></i> Calcular
-                    </button>
-                    <button id="reset-bread" class="btn btn-danger">
-                        <i class="fas fa-undo"></i> Resetar
-                    </button>
-                    <button id="save-bread" class="btn btn-success">
-                        <i class="fas fa-save"></i> Salvar
-                    </button>
-                    <button id="print-bread" class="btn btn-accent">
-                        <i class="fas fa-print"></i> Imprimir
-                    </button>
-                    <button id="share-bread" class="btn btn-outline">
-                        <i class="fas fa-share-alt"></i> Compartilhar
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Modo Bolos Personalizados -->
-        <div id="cake-panel" class="mode-panel">
-            <!-- Configurações padrão para bolos -->
-            <div class="default-settings">
-                <h3><i class="fas fa-cog"></i> Configurações Padrão</h3>
-                <div class="form-group">
-                    <label for="default-mix">Quantidade padrão da mistura pronta (kg):</label>
-                    <input type="number" id="default-mix" min="0.1" step="0.1" value="5">
-                </div>
-                <div class="form-group">
-                    <label for="default-milk">Quantidade padrão de leite (litros):</label>
-                    <input type="number" id="default-milk" min="0.1" step="0.1" value="2.5">
-                </div>
-                <div class="form-group">
-                    <label for="default-eggs">Quantidade padrão de ovos (unidades):</label>
-                    <input type="number" id="default-eggs" min="1" step="1" value="35">
-                </div>
-                <div class="form-group">
-                    <label>Ingredientes opcionais:</label>
-                    <div class="optional-ingredients">
-                        <label><input type="checkbox" id="use-ferment"> Usar fermento</label>
-                        <label><input type="checkbox" id="use-water"> Usar água</label>
-                        <label><input type="checkbox" id="use-extra-milk"> Usar leite extra</label>
+            </section>
+
+            <!-- Recipes Section -->
+            <section id="recipes-section" class="hidden">
+                <div class="card animate__animated animate__fadeIn">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-book"></i> Receitas Originais
+                        </div>
+                        <div class="recipe-count" id="original-count"></div>
+                    </div>
+                    <div class="recipe-grid" id="original-recipes-grid">
+                        <!-- Populated by JavaScript -->
                     </div>
                 </div>
-                <button id="save-defaults" class="btn btn-success">
-                    <i class="fas fa-save"></i> Salvar Configurações
-                </button>
-            </div>
-            
-            <div class="form-group">
-                <label for="recipe-name">Nome da Receita:</label>
-                <input type="text" id="recipe-name" placeholder="Ex: Bolo de Chocolate">
-            </div>
-            
-            <div class="form-group">
-                <label for="desired-mix">Quantidade desejada de mistura pronta (kg):</label>
-                <input type="number" id="desired-mix" min="0.1" step="0.1" placeholder="Digite a quantidade em kg">
-                
-                <div class="quick-multipliers">
-                    <button data-mult="0.5">½x</button>
-                    <button data-mult="1">1x</button>
-                    <button data-mult="2">2x</button>
+
+                <div class="card animate__animated animate__fadeIn" style="animation-delay: 100ms">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-star"></i> Receitas Personalizadas
+                        </div>
+                        <div class="recipe-count" id="custom-count"></div>
+                    </div>
+                    <div class="recipe-grid" id="custom-recipes-grid">
+                        <!-- Populated by JavaScript -->
+                    </div>
                 </div>
+            </section>
+
+            <!-- Saved Recipes Section -->
+            <section id="saved-section" class="hidden">
+                <div class="card animate__animated animate__fadeIn">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-bookmark"></i> Receitas Salvas
+                        </div>
+                    </div>
+                    <div class="recipe-grid" id="saved-recipes-grid">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Recipe Result Modal -->
+    <div class="modal-overlay" id="result-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modal-recipe-title">
+                    <i class="fas fa-calculator"></i> Receita Calculada
+                </h2>
+                <button class="modal-close">&times;</button>
             </div>
-            
-            <div class="loading-bar" id="cake-loading-bar"></div>
-            
-            <div class="button-group">
-                <button id="calculate-cake" class="btn btn-primary">
-                    <i class="fas fa-calculator"></i> Calcular
-                </button>
-                <button id="reset-cake" class="btn btn-danger">
-                    <i class="fas fa-undo"></i> Resetar
-                </button>
-            </div>
-            
-            <div id="cake-results" style="display: none;">
-                <h2 id="cake-recipe-title"></h2>
-                <div class="table-container">
+            <div class="modal-body">
+                <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
                                 <th>Ingrediente</th>
-                                <th>Quantidade Padrão</th>
-                                <th>Quantidade Ajustada</th>
+                                <th>Quantidade</th>
+                                <th>Unidade</th>
                             </tr>
                         </thead>
-                        <tbody id="cake-results-body"></tbody>
+                        <tbody id="modal-ingredients-body">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
                     </table>
                 </div>
-                
+
                 <div class="button-group">
-                    <button id="print-cake" class="btn btn-accent">
+                    <button id="print-btn" class="btn btn-secondary btn-sm">
                         <i class="fas fa-print"></i> Imprimir
                     </button>
-                    <button id="share-cake" class="btn btn-outline">
+                    <button id="share-btn" class="btn btn-secondary btn-sm">
                         <i class="fas fa-share-alt"></i> Compartilhar
+                    </button>
+                    <button id="save-custom-btn" class="btn btn-success btn-sm">
+                        <i class="fas fa-save"></i> Salvar
                     </button>
                 </div>
             </div>
         </div>
     </div>
-    
+
+    <!-- View Recipe Modal -->
+    <div class="modal-overlay" id="view-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="view-modal-title">
+                    <i class="fas fa-book-open"></i> Detalhes da Receita
+                </h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="ingredient-list" id="view-ingredients-list">
+                    <!-- Populated by JavaScript -->
+                </div>
+
+                <div class="button-group">
+                    <button id="edit-recipe-btn" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Editar Receita
+                    </button>
+                    <button id="favorite-recipe-btn" class="btn btn-secondary">
+                        <i class="fas fa-star"></i> Favoritar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Recipe Modal -->
+    <div class="modal-overlay" id="edit-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="edit-modal-title">
+                    <i class="fas fa-edit"></i> Editar Receita
+                </h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="edit-recipe-name">
+                        <i class="fas fa-tag"></i> Nome da Receita
+                    </label>
+                    <input type="text" id="edit-recipe-name" placeholder="Nome da receita">
+                </div>
+
+                <h3 style="margin: 24px 0 16px; color: var(--gray-700);">
+                    <i class="fas fa-list"></i> Ingredientes
+                </h3>
+                
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px; margin-bottom: 20px;">
+                    <input type="text" id="ingredient-name" placeholder="Ingrediente" class="input-wrapper">
+                    <input type="number" id="ingredient-amount" placeholder="Qtd" step="0.001" class="input-wrapper">
+                    <div class="select-wrapper">
+                        <select id="ingredient-unit">
+                            <option value="kg">kg</option>
+                            <option value="g">g</option>
+                            <option value="un">un</option>
+                            <option value="litros">L</option>
+                            <option value="ml">ml</option>
+                        </select>
+                    </div>
+                    <button id="add-ingredient" class="btn btn-success btn-icon">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <div class="ingredient-list" id="edit-ingredients-list">
+                    <!-- Populated by JavaScript -->
+                </div>
+
+                <div class="form-group">
+                    <label for="base-ingredient">
+                        <i class="fas fa-balance-scale"></i> Ingrediente base para cálculo
+                    </label>
+                    <div class="select-wrapper">
+                        <select id="base-ingredient">
+                            <!-- Populated by JavaScript -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="save-recipe-btn" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar Alterações
+                    </button>
+                    <button id="cancel-edit-btn" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="bottom-nav-item active" data-tab="calculator">
+            <i class="fas fa-calculator"></i>
+            <span>Calcular</span>
+        </div>
+        <div class="bottom-nav-item" data-tab="recipes">
+            <i class="fas fa-book"></i>
+            <span>Receitas</span>
+        </div>
+        <div class="bottom-nav-item" data-tab="saved">
+            <i class="fas fa-star"></i>
+            <span>Salvas</span>
+        </div>
+        <div class="bottom-nav-item" id="settings-btn">
+            <i class="fas fa-cog"></i>
+            <span>Config</span>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
     <div class="toast" id="toast"></div>
 
    <script src="main.js"></script>
