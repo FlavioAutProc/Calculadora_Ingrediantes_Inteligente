@@ -1316,3 +1316,44 @@ tr:hover td {
         border-color: var(--light);
     }
 }
+
+/* Corrige o alinhamento do botão Nova Receita */
+#add-recipe-btn {
+    position: relative;
+    padding-top: 28px; /* Espaço para o ícone */
+}
+
+#add-recipe-btn span {
+    margin-top: 0; /* Remove o margin-top anterior */
+    display: block;
+}
+
+.add-recipe-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--primary-gradient);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: var(--shadow-lg);
+    border: 4px solid var(--light);
+    z-index: 2;
+}
+
+.add-recipe-icon i {
+    color: white;
+    font-size: 1.6rem;
+    margin-bottom: 0;
+}
+
+/* Para dark mode */
+@media (prefers-color-scheme: dark) {
+    .add-recipe-icon {
+        border-color: var(--light);
+    }
+}
