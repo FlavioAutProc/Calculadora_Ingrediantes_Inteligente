@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PãoMaster - Calculadora de Receitas</title>
+    <title>PãoMaster - Calculadora de Receitas Profissional</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,11 +17,27 @@
             <div class="header-content">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
                     <div>
-                        <h1><i class="fas fa-bread-slice"></i> PãoMaster</h1>
+                        <h1><i class="fas fa-bread-slice"></i> PãoMaster Pro</h1>
                         <p>Calculadora profissional de receitas</p>
                     </div>
-                    <div class="user-avatar">
-                        <i class="fas fa-user"></i>
+                    <div class="header-actions">
+                        <button class="btn-icon search-btn" id="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <div class="user-avatar">
+                            <i class="fas fa-user-chef"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Barra de Pesquisa -->
+                <div class="search-bar hidden" id="search-bar">
+                    <div class="input-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-input" placeholder="Pesquisar receitas...">
+                        <button class="btn-icon btn-sm" id="clear-search">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -53,6 +70,9 @@
                             </div>
                             <div class="card-subtitle">Calcule quantidades com base na farinha</div>
                         </div>
+                        <button class="btn-icon btn-sm btn-outline" id="calculator-help">
+                            <i class="fas fa-question-circle"></i>
+                        </button>
                     </div>
 
                     <div class="form-group">
@@ -70,27 +90,29 @@
                         <label for="flour-input">
                             <i class="fas fa-weight-hanging"></i> Quantidade de farinha (kg)
                         </label>
-                        <div class="input-wrapper">
-                            <input type="number" id="flour-input" min="0.1" step="0.1" placeholder="Ex: 5.0" inputmode="decimal">
-                        </div>
-                        
-                        <div class="quick-actions">
-                            <button class="quick-action-btn" data-mult="0.5">
-                                <i class="fas fa-divide"></i>½x
-                            </button>
-                            <button class="quick-action-btn" data-mult="1.5">
-                                <i class="fas fa-plus"></i>1.5x
-                            </button>
-                            <button class="quick-action-btn" data-mult="2">
-                                <i class="fas fa-times"></i>2x
-                            </button>
-                            <button class="quick-action-btn" data-mult="5">
-                                <i class="fas fa-bolt"></i>5x
-                            </button>
+                        <div class="input-with-actions">
+                            <div class="input-wrapper">
+                                <input type="number" id="flour-input" min="0.1" step="0.1" placeholder="Ex: 5.0" inputmode="decimal">
+                                <span class="input-suffix">kg</span>
+                            </div>
+                            <div class="quick-actions">
+                                <button class="quick-action-btn" data-mult="0.5" title="Metade">
+                                    <i class="fas fa-divide"></i>½x
+                                </button>
+                                <button class="quick-action-btn" data-mult="1.5" title="Uma vez e meia">
+                                    <i class="fas fa-plus"></i>1.5x
+                                </button>
+                                <button class="quick-action-btn" data-mult="2" title="Dobro">
+                                    <i class="fas fa-times"></i>2x
+                                </button>
+                                <button class="quick-action-btn" data-mult="5" title="Cinco vezes">
+                                    <i class="fas fa-bolt"></i>5x
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <button id="calculate-btn" class="btn btn-primary">
+                    <button id="calculate-btn" class="btn btn-primary btn-lg">
                         <i class="fas fa-calculator"></i> Calcular Receita
                         <i class="fas fa-arrow-right" style="margin-left: auto;"></i>
                     </button>
@@ -102,6 +124,9 @@
                         <div class="card-title">
                             <i class="fas fa-history"></i> Cálculos Recentes
                         </div>
+                        <button class="btn-icon btn-sm btn-outline" id="clear-history">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                     <div id="recent-calculations">
                         <div class="empty-state">
@@ -110,30 +135,40 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Tips -->
+                <div class="card tips-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-lightbulb"></i> Dica do Padeiro
+                        </div>
+                    </div>
+                    <div class="tips-content">
+                        <p id="baker-tip">Sempre pese seus ingredientes com precisão para resultados consistentes.</p>
+                    </div>
+                </div>
             </section>
 
             <!-- Recipes Section -->
             <section id="recipes-section" class="hidden">
+                <!-- Filtros -->
+                <div class="filters-row">
+                    <button class="filter-btn active" data-filter="all">Todas</button>
+                    <button class="filter-btn" data-filter="original">Originais</button>
+                    <button class="filter-btn" data-filter="custom">Personalizadas</button>
+                    <button class="filter-btn" data-filter="favorite">
+                        <i class="fas fa-star"></i> Favoritas
+                    </button>
+                </div>
+
                 <div class="card animate__animated animate__fadeIn">
                     <div class="card-header">
                         <div class="card-title">
-                            <i class="fas fa-book"></i> Receitas Originais
+                            <i class="fas fa-book"></i> Receitas
                         </div>
-                        <div class="recipe-count" id="original-count"></div>
+                        <div class="recipe-count" id="total-count"></div>
                     </div>
-                    <div class="recipe-grid" id="original-recipes-grid">
-                        <!-- Populated by JavaScript -->
-                    </div>
-                </div>
-
-                <div class="card animate__animated animate__fadeIn" style="animation-delay: 100ms">
-                    <div class="card-header">
-                        <div class="card-title">
-                            <i class="fas fa-star"></i> Receitas Personalizadas
-                        </div>
-                        <div class="recipe-count" id="custom-count"></div>
-                    </div>
-                    <div class="recipe-grid" id="custom-recipes-grid">
+                    <div class="recipe-grid" id="recipes-grid">
                         <!-- Populated by JavaScript -->
                     </div>
                 </div>
@@ -146,6 +181,7 @@
                         <div class="card-title">
                             <i class="fas fa-bookmark"></i> Receitas Salvas
                         </div>
+                        <div class="recipe-count" id="saved-count">0 receitas</div>
                     </div>
                     <div class="recipe-grid" id="saved-recipes-grid">
                         <!-- Populated by JavaScript -->
@@ -165,6 +201,23 @@
                 <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
+                <div class="calculation-info">
+                    <div class="info-item">
+                        <i class="fas fa-balance-scale"></i>
+                        <div>
+                            <div class="info-label">Base</div>
+                            <div class="info-value" id="base-info"></div>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <div class="info-label">Data</div>
+                            <div class="info-value" id="date-info"></div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -205,6 +258,11 @@
                 <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
+                <div class="recipe-meta-info">
+                    <span class="recipe-type" id="view-recipe-type"></span>
+                    <span class="recipe-ingredients-count" id="view-ingredients-count"></span>
+                </div>
+
                 <div class="ingredient-list" id="view-ingredients-list">
                     <!-- Populated by JavaScript -->
                 </div>
@@ -216,12 +274,15 @@
                     <button id="favorite-recipe-btn" class="btn btn-secondary">
                         <i class="fas fa-star"></i> Favoritar
                     </button>
+                    <button id="duplicate-recipe-btn" class="btn btn-outline">
+                        <i class="fas fa-copy"></i> Duplicar
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Edit Recipe Modal -->
+    <!-- Edit Recipe Modal (Aprimorado) -->
     <div class="modal-overlay" id="edit-modal">
         <div class="modal">
             <div class="modal-header">
@@ -238,28 +299,49 @@
                     <input type="text" id="edit-recipe-name" placeholder="Nome da receita">
                 </div>
 
-                <h3 style="margin: 24px 0 16px; color: var(--gray-700);">
-                    <i class="fas fa-list"></i> Ingredientes
-                </h3>
-                
-                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 10px; margin-bottom: 20px;">
-                    <input type="text" id="ingredient-name" placeholder="Ingrediente" class="input-wrapper">
-                    <input type="number" id="ingredient-amount" placeholder="Qtd" step="0.001" class="input-wrapper">
+                <div class="form-group">
+                    <label for="edit-recipe-category">
+                        <i class="fas fa-folder"></i> Categoria
+                    </label>
                     <div class="select-wrapper">
-                        <select id="ingredient-unit">
-                            <option value="kg">kg</option>
-                            <option value="g">g</option>
-                            <option value="un">un</option>
-                            <option value="litros">L</option>
-                            <option value="ml">ml</option>
+                        <select id="edit-recipe-category">
+                            <option value="Pães">Pães</option>
+                            <option value="Bolachas">Bolachas</option>
+                            <option value="Especiais">Especiais</option>
+                            <option value="Personalizada">Personalizada</option>
                         </select>
                     </div>
-                    <button id="add-ingredient" class="btn btn-success btn-icon">
-                        <i class="fas fa-plus"></i>
-                    </button>
                 </div>
 
-                <div class="ingredient-list" id="edit-ingredients-list">
+                <div class="section-header">
+                    <h3><i class="fas fa-list"></i> Ingredientes</h3>
+                    <button class="btn-icon btn-sm btn-success" id="bulk-add-btn">
+                        <i class="fas fa-plus-circle"></i> Adicionar Vários
+                    </button>
+                </div>
+                
+                <div class="ingredient-editor">
+                    <div class="ingredient-input-row">
+                        <input type="text" id="ingredient-name" placeholder="Nome do ingrediente" class="input-wrapper">
+                        <input type="number" id="ingredient-amount" placeholder="Quantidade" step="0.001" class="input-wrapper">
+                        <div class="select-wrapper">
+                            <select id="ingredient-unit">
+                                <option value="kg">kg</option>
+                                <option value="g">g</option>
+                                <option value="un">un</option>
+                                <option value="litros">L</option>
+                                <option value="ml">ml</option>
+                                <option value="colheres">colheres</option>
+                                <option value="xícaras">xícaras</option>
+                            </select>
+                        </div>
+                        <button id="add-ingredient" class="btn btn-success btn-icon">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="ingredient-list editable" id="edit-ingredients-list">
                     <!-- Populated by JavaScript -->
                 </div>
 
@@ -278,6 +360,9 @@
                     <button id="save-recipe-btn" class="btn btn-primary">
                         <i class="fas fa-save"></i> Salvar Alterações
                     </button>
+                    <button id="delete-recipe-btn" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Excluir Receita
+                    </button>
                     <button id="cancel-edit-btn" class="btn btn-secondary">
                         <i class="fas fa-times"></i> Cancelar
                     </button>
@@ -286,7 +371,100 @@
         </div>
     </div>
 
-    <!-- Bottom Navigation -->
+    <!-- Bulk Add Modal -->
+    <div class="modal-overlay" id="bulk-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-list-ol"></i> Adicionar Vários Ingredientes</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="bulk-ingredients">
+                        <i class="fas fa-paste"></i> Cole os ingredientes (um por linha)
+                    </label>
+                    <textarea id="bulk-ingredients" rows="10" placeholder="Exemplo:
+Farinha de trigo 5 kg
+Sal 0.5 kg
+Água 3 litros
+Fermento 0.2 kg"></textarea>
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-info-circle"></i> Formato: Nome quantidade unidade</label>
+                </div>
+                <div class="button-group">
+                    <button id="process-bulk-btn" class="btn btn-primary">
+                        <i class="fas fa-magic"></i> Processar
+                    </button>
+                    <button class="btn btn-secondary bulk-modal-close">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-cog"></i> Configurações</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h3><i class="fas fa-file-pdf"></i> Exportação</h3>
+                    <div class="settings-item">
+                        <div class="settings-info">
+                            <h4>Gerar PDF de Todas as Receitas</h4>
+                            <p>Exporte todas as receitas em um arquivo PDF organizado</p>
+                        </div>
+                        <button id="generate-pdf-btn" class="btn btn-primary">
+                            <i class="fas fa-download"></i> Gerar PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3><i class="fas fa-database"></i> Dados</h3>
+                    <div class="settings-item">
+                        <div class="settings-info">
+                            <h4>Exportar Dados</h4>
+                            <p>Exporte todas as receitas em formato JSON</p>
+                        </div>
+                        <button id="export-data-btn" class="btn btn-outline">
+                            <i class="fas fa-file-export"></i> Exportar
+                        </button>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-info">
+                            <h4>Importar Dados</h4>
+                            <p>Importe receitas de um arquivo JSON</p>
+                        </div>
+                        <input type="file" id="import-file" accept=".json" style="display: none;">
+                        <button id="import-data-btn" class="btn btn-outline">
+                            <i class="fas fa-file-import"></i> Importar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3><i class="fas fa-broom"></i> Limpeza</h3>
+                    <div class="settings-item">
+                        <div class="settings-info">
+                            <h4>Limpar Todos os Dados</h4>
+                            <p>Remove todas as receitas personalizadas e cálculos</p>
+                        </div>
+                        <button id="clear-all-btn" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Limpar Tudo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Atualizada -->
     <div class="bottom-nav">
         <div class="bottom-nav-item active" data-tab="calculator">
             <i class="fas fa-calculator"></i>
@@ -300,6 +478,12 @@
             <i class="fas fa-star"></i>
             <span>Salvas</span>
         </div>
+        <div class="bottom-nav-item" id="add-recipe-btn">
+            <div class="add-recipe-icon">
+                <i class="fas fa-plus"></i>
+            </div>
+            <span>Nova Receita</span>
+        </div>
         <div class="bottom-nav-item" id="settings-btn">
             <i class="fas fa-cog"></i>
             <span>Config</span>
@@ -307,8 +491,20 @@
     </div>
 
     <!-- Toast Notification -->
-    <div class="toast" id="toast"></div>
+    <div class="toast" id="toast">
+        <i class="fas fa-info-circle"></i>
+        <span id="toast-message"></span>
+    </div>
 
-   <script src="main.js"></script>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading">
+        <div class="loading-spinner">
+            <i class="fas fa-bread-slice fa-spin"></i>
+        </div>
+        <div class="loading-text">Processando...</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>
