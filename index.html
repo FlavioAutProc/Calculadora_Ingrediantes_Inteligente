@@ -1,84 +1,406 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PãoMaster - Calculadora de Receitas Profissional</title>
+    <title>Padaria — Controle de Receitas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
-    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+/* ============ TOKENS ============ */
+:root {
+    --bg: #FAF6EE;
+    --surface: #FFFFFF;
+    --surface-sunk: #F1E9D9;
+    --ink: #241811;
+    --ink-soft: #6E5B49;
+    --ink-faint: #A5927D;
+    --line: rgba(36, 24, 17, 0.09);
+    --line-strong: rgba(36, 24, 17, 0.16);
+
+    --crust: #A5481C;
+    --crust-dark: #7C350F;
+    --crust-tint: #F4E2D3;
+    --wheat: #C4922E;
+    --wheat-tint: #F3E6C8;
+    --proof: #5B7A43;
+    --proof-tint: #E4EBDA;
+    --brick: #A63B2E;
+    --brick-tint: #F3DEDA;
+    --steel: #3E6E80;
+
+    --shadow-sm: 0 1px 2px rgba(36, 24, 17, .06);
+    --shadow-md: 0 6px 20px -6px rgba(36, 24, 17, .18);
+    --shadow-lg: 0 -8px 30px -8px rgba(36, 24, 17, .25);
+
+    --r-sm: 10px;
+    --r-md: 16px;
+    --r-lg: 22px;
+    --r-full: 999px;
+
+    --ease: cubic-bezier(.22, .61, .36, 1);
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior-y: none;
+}
+button, input, select, textarea { font-family: inherit; }
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+/* ============ SHELL ============ */
+.app-shell { max-width: 560px; margin: 0 auto; min-height: 100vh; position: relative; padding-bottom: calc(84px + var(--safe-bottom)); }
+
+.app-header {
+    padding: calc(18px + var(--safe-top)) 20px 16px;
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+}
+.app-header::after {
+    content: '';
+    position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+    background: var(--line);
+    opacity: 0;
+    transition: opacity .2s var(--ease);
+}
+.app-header.scrolled::after { opacity: 1; }
+
+.header-row { display: flex; align-items: center; justify-content: space-between; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+    width: 40px; height: 40px; border-radius: var(--r-md);
+    background: var(--crust); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.05rem; flex-shrink: 0;
+}
+.brand h1 { font-family: var(--font-display); font-size: 1.28rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.1; }
+.brand p { font-size: .78rem; color: var(--ink-soft); margin-top: 2px; }
+
+.icon-btn {
+    width: 40px; height: 40px; border-radius: var(--r-full);
+    border: none; background: var(--surface-sunk); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; cursor: pointer; transition: background .15s var(--ease), transform .1s var(--ease);
+}
+.icon-btn:active { transform: scale(.92); background: var(--line-strong); }
+.header-icons { display: flex; gap: 8px; }
+
+.search-bar { margin-top: 14px; overflow: hidden; transition: max-height .25s var(--ease), opacity .2s var(--ease), margin-top .25s var(--ease); max-height: 60px; opacity: 1; }
+.search-bar.hidden { max-height: 0; opacity: 0; margin-top: 0; }
+.search-bar .input-wrapper { position: relative; }
+.search-bar .input-wrapper i.fa-magnifying-glass, .search-bar .input-wrapper > i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); }
+.search-bar input { padding-left: 44px; padding-right: 44px; }
+.search-bar #clear-search { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; }
+
+/* ============ MAIN ============ */
+.main-content { padding: 4px 20px 8px; }
+section.hidden { display: none; }
+section { animation: viewIn .28s var(--ease); }
+@keyframes viewIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ============ CARDS ============ */
+.card {
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    padding: 22px;
+    margin-bottom: 16px;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow-sm);
+    opacity: 0;
+    transform: translateY(10px);
+}
+.card.reveal-in { animation: cardIn .45s var(--ease) forwards; }
+@keyframes cardIn { to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .card { opacity: 1; transform: none; } }
+.card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; gap: 12px; }
+.card-title { font-family: var(--font-display); font-size: 1.12rem; font-weight: 600; display: flex; align-items: center; gap: 10px; color: var(--ink); }
+.card-title i { color: var(--crust); font-size: .95rem; }
+.card-subtitle { font-size: .85rem; color: var(--ink-soft); margin-top: 4px; }
+
+.tips-card { background: var(--proof-tint); border-color: transparent; }
+.tips-card .card-title i { color: var(--proof); }
+.tips-content { font-size: .9rem; color: #3C4E30; line-height: 1.55; }
+
+/* ============ FORMS ============ */
+.form-group { margin-bottom: 20px; }
+.form-group:last-child { margin-bottom: 0; }
+label { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; font-weight: 600; font-size: .88rem; color: var(--ink); }
+label i { color: var(--crust); width: 14px; }
+
+.select-wrapper, .input-wrapper { position: relative; }
+select, input, textarea {
+    width: 100%; padding: 15px 16px; border-radius: var(--r-md);
+    border: 1.5px solid var(--line-strong); background: var(--surface);
+    font-size: .98rem; color: var(--ink); appearance: none; transition: border-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+textarea { resize: vertical; min-height: 110px; line-height: 1.5; }
+select:focus, input:focus, textarea:focus { outline: none; border-color: var(--crust); box-shadow: 0 0 0 3px var(--crust-tint); }
+select:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--crust); outline-offset: 1px; }
+.select-wrapper::after {
+    content: '\f078'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    color: var(--ink-faint); pointer-events: none; font-size: .8rem;
+}
+.input-suffix { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--ink-soft); font-weight: 600; font-size: .88rem; pointer-events: none; }
+
+.quick-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.quick-action-btn {
+    flex: 1; min-width: 62px; padding: 10px 8px; border-radius: var(--r-sm);
+    border: 1.5px solid var(--line-strong); background: var(--surface);
+    font-weight: 700; font-size: .85rem; color: var(--ink-soft); cursor: pointer;
+    transition: all .15s var(--ease);
+}
+.quick-action-btn:active, .quick-action-btn.active { background: var(--crust); border-color: var(--crust); color: #fff; transform: scale(.96); }
+
+/* ============ COMPOSITION BAR (signature element) ============ */
+.composition {
+    margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--line-strong);
+}
+.composition-label { display: flex; justify-content: space-between; font-size: .78rem; color: var(--ink-soft); margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+.composition-bar { display: flex; height: 14px; border-radius: var(--r-full); overflow: hidden; background: var(--surface-sunk); }
+.composition-bar .seg { height: 100%; transition: width .4s var(--ease); }
+.composition-bar .seg.base { background: var(--crust); }
+.composition-bar .seg.rest { background: var(--wheat); }
+.composition-legend { display: flex; justify-content: space-between; margin-top: 8px; font-size: .82rem; }
+.composition-legend .item { display: flex; align-items: center; gap: 6px; color: var(--ink-soft); }
+.composition-legend .dot { width: 8px; height: 8px; border-radius: 50%; }
+.composition-legend .dot.base { background: var(--crust); }
+.composition-legend .dot.rest { background: var(--wheat); }
+.composition-legend strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* ============ BUTTONS ============ */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    width: 100%; padding: 16px 20px; border: none; border-radius: var(--r-md);
+    font-weight: 700; font-size: .96rem; cursor: pointer; transition: transform .1s var(--ease), background .15s var(--ease), opacity .15s var(--ease);
+}
+.btn:active { transform: scale(.98); }
+.btn-lg { padding: 18px 20px; font-size: 1rem; }
+.btn-primary { background: var(--crust); color: #fff; }
+.btn-primary:active { background: var(--crust-dark); }
+.btn-secondary { background: var(--surface-sunk); color: var(--ink); }
+.btn-success { background: var(--proof); color: #fff; }
+.btn-danger { background: var(--brick); color: #fff; }
+.btn-outline { background: transparent; border: 1.5px solid var(--crust); color: var(--crust); }
+.btn-sm { padding: 11px 16px; font-size: .85rem; width: auto; border-radius: var(--r-sm); }
+.btn-icon { width: 40px; height: 40px; padding: 0; border-radius: var(--r-full); }
+.button-group { display: flex; gap: 10px; margin-top: 20px; }
+.button-group .btn { flex: 1; }
+
+/* ============ SEGMENTED FILTER CHIPS ============ */
+.filters-row { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.filters-row::-webkit-scrollbar { display: none; }
+.filter-btn {
+    padding: 9px 15px; background: var(--surface); border: 1.5px solid var(--line-strong);
+    border-radius: var(--r-full); font-weight: 600; font-size: .84rem; color: var(--ink-soft);
+    cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; transition: all .15s var(--ease);
+}
+.filter-btn.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+
+/* ============ RECIPE GRID / CARDS ============ */
+.recipe-count { font-size: .82rem; color: var(--ink-soft); font-weight: 600; }
+.recipe-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.recipe-card {
+    background: var(--surface); border-radius: var(--r-md); padding: 16px;
+    border: 1px solid var(--line); cursor: pointer; position: relative; transition: transform .15s var(--ease), box-shadow .15s var(--ease);
+}
+.recipe-card:active { transform: scale(.97); }
+.recipe-card.favorite::before {
+    content: '\f005'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+    position: absolute; top: 12px; right: 12px; color: var(--wheat); font-size: .95rem;
+}
+.recipe-card .recipe-actions { position: absolute; top: 8px; right: 8px; }
+.recipe-icon {
+    width: 40px; height: 40px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px; color: #fff; font-size: 1.15rem;
+}
+.recipe-name { font-weight: 700; color: var(--ink); margin-bottom: 5px; font-size: .96rem; line-height: 1.3; }
+.recipe-meta { font-size: .78rem; color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
+.recipe-meta-info { display: flex; gap: 10px; margin-bottom: 18px; }
+.recipe-type, .recipe-ingredients-count { padding: 5px 12px; background: var(--surface-sunk); border-radius: var(--r-full); font-size: .8rem; color: var(--ink-soft); font-weight: 600; }
+
+.empty-state { text-align: center; padding: 44px 16px; color: var(--ink-faint); }
+.empty-state i { font-size: 2rem; margin-bottom: 12px; opacity: .6; }
+.empty-state p { font-size: .92rem; margin-bottom: 4px; }
+
+/* ============ INGREDIENT LISTS ============ */
+.ingredient-list { display: flex; flex-direction: column; gap: 8px; }
+.ingredient-item, .ingredient-input-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    background: var(--surface-sunk); border-radius: var(--r-sm); padding: 13px 14px;
+}
+.ingredient-input-row { background: transparent; padding: 0; margin-bottom: 14px; }
+.ingredient-input-row input, .ingredient-input-row .select-wrapper { flex: 1; min-width: 0; }
+.ingredient-input-row input#ingredient-amount { flex: 0 0 90px; }
+.ingredient-info { min-width: 0; }
+.ingredient-name { font-weight: 600; font-size: .9rem; color: var(--ink); }
+.ingredient-details { font-size: .8rem; color: var(--ink-soft); display: flex; gap: 10px; margin-top: 2px; }
+.ingredient-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.section-header h3 { font-family: var(--font-display); font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.section-header h3 i { color: var(--crust); font-size: .88rem; }
+
+/* ============ RESULT TABLE ============ */
+.calculation-info { display: flex; gap: 20px; margin-bottom: 18px; padding: 14px 16px; background: var(--surface-sunk); border-radius: var(--r-md); }
+.info-item { display: flex; align-items: center; gap: 10px; }
+.info-item i { color: var(--crust); }
+.info-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .03em; color: var(--ink-soft); font-weight: 700; }
+.info-value { font-size: .92rem; font-weight: 700; color: var(--ink); }
+.table-responsive { overflow-x: auto; border-radius: var(--r-md); border: 1px solid var(--line); }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 12px 14px; text-align: left; font-size: .88rem; }
+th { background: var(--surface-sunk); font-weight: 700; color: var(--ink-soft); font-size: .76rem; text-transform: uppercase; letter-spacing: .03em; }
+tbody tr:not(:last-child) td { border-bottom: 1px solid var(--line); }
+td:nth-child(2) { font-variant-numeric: tabular-nums; font-weight: 700; }
+
+/* ============ BOTTOM SHEET MODALS ============ */
+.modal-overlay {
+    position: fixed; inset: 0; background: rgba(36, 24, 17, 0.45);
+    display: flex; align-items: flex-end; justify-content: center;
+    opacity: 0; visibility: hidden; transition: opacity .22s var(--ease), visibility .22s;
+    z-index: 1000; backdrop-filter: blur(2px);
+}
+.modal-overlay.active { opacity: 1; visibility: visible; }
+.modal {
+    background: var(--surface); width: 100%; max-width: 560px;
+    border-radius: 24px 24px 0 0; max-height: 88vh; overflow-y: auto;
+    transform: translateY(100%); transition: transform .28s var(--ease);
+    padding-bottom: calc(20px + var(--safe-bottom));
+    box-shadow: var(--shadow-lg);
+}
+.modal-overlay.active .modal { transform: translateY(0); }
+.modal::before {
+    content: ''; display: block; width: 40px; height: 4px; border-radius: var(--r-full);
+    background: var(--line-strong); margin: 12px auto 4px;
+}
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 22px 16px; }
+.modal-header h2 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+.modal-header h2 i { color: var(--crust); font-size: 1rem; }
+.modal-close {
+    width: 34px; height: 34px; border-radius: var(--r-full); border: none;
+    background: var(--surface-sunk); color: var(--ink-soft); font-size: 1.2rem; cursor: pointer;
+}
+.modal-body { padding: 0 22px 22px; }
+
+/* ============ SETTINGS ============ */
+.settings-section { margin-bottom: 22px; }
+.settings-section:last-child { margin-bottom: 0; }
+.settings-section h3 { font-family: var(--font-display); font-size: .98rem; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.settings-section h3 i { color: var(--crust); font-size: .88rem; }
+.settings-item { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.settings-item:last-child { border-bottom: none; }
+.settings-info h4 { font-size: .92rem; font-weight: 700; margin-bottom: 2px; }
+.settings-info p { font-size: .8rem; color: var(--ink-soft); }
+
+/* ============ BOTTOM NAV (single navigation surface) ============ */
+.bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 900;
+    max-width: 560px; margin: 0 auto;
+    background: rgba(250, 246, 238, 0.92); backdrop-filter: blur(14px);
+    border-top: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-around;
+    padding: 8px 4px calc(8px + var(--safe-bottom));
+}
+.bottom-nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    color: var(--ink-faint); font-size: .68rem; font-weight: 700; cursor: pointer;
+    padding: 6px 10px; border-radius: var(--r-sm); transition: color .15s var(--ease);
+    flex: 1;
+}
+.bottom-nav-item i { font-size: 1.2rem; }
+.bottom-nav-item.active { color: var(--crust); }
+.bottom-nav-item:active { transform: scale(.94); }
+.add-recipe-icon {
+    width: 48px; height: 48px; border-radius: var(--r-full); background: var(--crust); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
+    margin-bottom: 2px; box-shadow: 0 4px 14px -2px rgba(165, 72, 28, .55);
+}
+#add-recipe-btn { color: var(--ink); }
+
+/* ============ TOAST ============ */
+.toast {
+    position: fixed; bottom: calc(96px + var(--safe-bottom)); left: 50%;
+    transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff;
+    padding: 13px 20px; border-radius: var(--r-full); font-size: .88rem; font-weight: 600;
+    display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow-md);
+    opacity: 0; visibility: hidden; transition: all .25s var(--ease); z-index: 1200; max-width: 90%;
+}
+.toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+.toast.success i { color: #7FBF6A; }
+.toast.error i { color: #E8776A; }
+.toast.warning i { color: var(--wheat); }
+
+/* ============ LOADING ============ */
+.loading-overlay {
+    position: fixed; inset: 0; background: rgba(250, 246, 238, .92); z-index: 2000;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    opacity: 0; visibility: hidden; transition: all .2s var(--ease);
+}
+.loading-overlay.active { opacity: 1; visibility: visible; }
+.loading-spinner i { font-size: 2.2rem; color: var(--crust); }
+.loading-text { margin-top: 14px; font-weight: 600; color: var(--ink-soft); font-size: .9rem; }
+
+::selection { background: var(--crust-tint); }
+</style>
 </head>
 <body>
-    <div class="status-bar"></div>
-    
-    <div class="app-container">
-        <header class="app-header animate__animated animate__fadeInDown">
-            <div class="header-content">
-                <div style="display: flex; align-items: center; justify-content: space-between;">
+    <div class="app-shell">
+        <header class="app-header" id="app-header">
+            <div class="header-row">
+                <div class="brand">
+                    <div class="brand-mark"><i class="fas fa-wheat-awn"></i></div>
                     <div>
-                        <h1><i class="fas fa-bread-slice"></i> PãoMaster Pro</h1>
-                        <p>Calculadora profissional de receitas</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="btn-icon search-btn" id="search-btn">
-                            <i class="fas fa-search"></i>
-                        </button>
-                        <div class="user-avatar">
-                            <i class="fas fa-user-chef"></i>
-                        </div>
+                        <h1>Padaria</h1>
+                        <p>Receitas &amp; proporções</p>
                     </div>
                 </div>
-                
-                <!-- Barra de Pesquisa -->
-                <div class="search-bar hidden" id="search-bar">
-                    <div class="input-wrapper">
-                        <i class="fas fa-search"></i>
-                        <input type="text" id="search-input" placeholder="Pesquisar receitas...">
-                        <button class="btn-icon btn-sm" id="clear-search">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
+                <div class="header-icons">
+                    <button class="icon-btn" id="search-btn" aria-label="Pesquisar"><i class="fas fa-magnifying-glass"></i></button>
+                    <button class="icon-btn" id="settings-btn" aria-label="Configurações"><i class="fas fa-gear"></i></button>
+                </div>
+            </div>
+            <div class="search-bar hidden" id="search-bar">
+                <div class="input-wrapper">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="text" id="search-input" placeholder="Pesquisar receitas...">
+                    <button class="icon-btn btn-icon" id="clear-search" style="width:32px;height:32px;"><i class="fas fa-xmark" style="font-size:.85rem"></i></button>
                 </div>
             </div>
         </header>
 
         <main class="main-content">
-            <!-- Segmented Control for Navigation -->
-            <div class="segmented-control">
-                <div class="segment active" data-tab="calculator">
-                    <i class="fas fa-calculator"></i>
-                    <span>Calcular</span>
-                </div>
-                <div class="segment" data-tab="recipes">
-                    <i class="fas fa-book"></i>
-                    <span>Receitas</span>
-                </div>
-                <div class="segment" data-tab="saved">
-                    <i class="fas fa-star"></i>
-                    <span>Salvas</span>
-                </div>
-            </div>
-
-            <!-- Calculator Section -->
+            <!-- Calculator -->
             <section id="calculator-section">
-                <div class="card animate__animated animate__fadeIn">
+                <div class="card">
                     <div class="card-header">
                         <div>
-                            <div class="card-title">
-                                <i class="fas fa-calculator"></i> Nova Receita
-                            </div>
-                            <div class="card-subtitle">Calcule quantidades com base na farinha</div>
+                            <div class="card-title"><i class="fas fa-scale-balanced"></i> Calcular receita</div>
+                            <div class="card-subtitle">Escolha a receita e a quantidade do ingrediente base</div>
                         </div>
-                        <button class="btn-icon btn-sm btn-outline" id="calculator-help">
-                            <i class="fas fa-question-circle"></i>
-                        </button>
+                        <button class="btn-icon btn-sm btn-outline" id="calculator-help" aria-label="Ajuda"><i class="fas fa-question"></i></button>
                     </div>
 
                     <div class="form-group">
-                        <label for="recipe-select">
-                            <i class="fas fa-list"></i> Selecione uma receita
-                        </label>
+                        <label for="recipe-select"><i class="fas fa-list-ul"></i> Receita</label>
                         <div class="select-wrapper">
                             <select id="recipe-select">
                                 <option value="">-- Selecione uma receita --</option>
@@ -87,243 +409,164 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="flour-input">
-                            <i class="fas fa-weight-hanging"></i> Quantidade de farinha (kg)
-                        </label>
-                        <div class="input-with-actions">
-                            <div class="input-wrapper">
-                                <input type="number" id="flour-input" min="0.1" step="0.1" placeholder="Ex: 5.0" inputmode="decimal">
-                                <span class="input-suffix">kg</span>
-                            </div>
-                            <div class="quick-actions">
-                                <button class="quick-action-btn" data-mult="0.5" title="Metade">
-                                    <i class="fas fa-divide"></i>½x
-                                </button>
-                                <button class="quick-action-btn" data-mult="1.5" title="Uma vez e meia">
-                                    <i class="fas fa-plus"></i>1.5x
-                                </button>
-                                <button class="quick-action-btn" data-mult="2" title="Dobro">
-                                    <i class="fas fa-times"></i>2x
-                                </button>
-                                <button class="quick-action-btn" data-mult="5" title="Cinco vezes">
-                                    <i class="fas fa-bolt"></i>5x
-                                </button>
+                        <label for="flour-input" id="flour-label"><i class="fas fa-weight-hanging"></i> Quantidade (kg)</label>
+                        <div class="input-wrapper">
+                            <input type="number" id="flour-input" min="0.01" step="0.1" placeholder="Ex: 5.0" inputmode="decimal">
+                            <span class="input-suffix">kg</span>
+                        </div>
+                        <div class="quick-actions">
+                            <button class="quick-action-btn" data-mult="0.5">½×</button>
+                            <button class="quick-action-btn" data-mult="1.5">1.5×</button>
+                            <button class="quick-action-btn" data-mult="2">2×</button>
+                            <button class="quick-action-btn" data-mult="5">5×</button>
+                        </div>
+                        <div class="composition" id="preview-composition" style="display:none;">
+                            <div class="composition-label"><span>Proporção da receita base</span></div>
+                            <div class="composition-bar"><div class="seg base" id="preview-bar-base"></div><div class="seg rest" id="preview-bar-rest"></div></div>
+                            <div class="composition-legend">
+                                <span class="item"><span class="dot base"></span><span id="preview-legend-base"></span></span>
+                                <span class="item"><span class="dot rest"></span><span id="preview-legend-rest"></span></span>
                             </div>
                         </div>
                     </div>
 
                     <button id="calculate-btn" class="btn btn-primary btn-lg">
-                        <i class="fas fa-calculator"></i> Calcular Receita
-                        <i class="fas fa-arrow-right" style="margin-left: auto;"></i>
+                        <i class="fas fa-calculator"></i> Calcular receita
                     </button>
                 </div>
 
-                <!-- Recent Calculations -->
-                <div class="card animate__animated animate__fadeIn" style="animation-delay: 100ms">
+                <div class="card">
                     <div class="card-header">
-                        <div class="card-title">
-                            <i class="fas fa-history"></i> Cálculos Recentes
-                        </div>
-                        <button class="btn-icon btn-sm btn-outline" id="clear-history">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <div class="card-title"><i class="fas fa-clock-rotate-left"></i> Cálculos recentes</div>
+                        <button class="btn-icon btn-sm btn-outline" id="clear-history" aria-label="Limpar histórico"><i class="fas fa-trash"></i></button>
                     </div>
                     <div id="recent-calculations">
-                        <div class="empty-state">
-                            <i class="fas fa-clock"></i>
-                            <p>Nenhum cálculo recente</p>
-                        </div>
+                        <div class="empty-state"><i class="fas fa-clock"></i><p>Nenhum cálculo recente</p></div>
                     </div>
                 </div>
 
-                <!-- Tips -->
                 <div class="card tips-card">
-                    <div class="card-header">
-                        <div class="card-title">
-                            <i class="fas fa-lightbulb"></i> Dica do Padeiro
-                        </div>
+                    <div class="card-header" style="margin-bottom:8px;">
+                        <div class="card-title"><i class="fas fa-lightbulb"></i> Dica do padeiro</div>
                     </div>
-                    <div class="tips-content">
-                        <p id="baker-tip">Sempre pese seus ingredientes com precisão para resultados consistentes.</p>
-                    </div>
+                    <div class="tips-content"><p id="baker-tip"></p></div>
                 </div>
             </section>
 
-            <!-- Recipes Section -->
+            <!-- Recipes -->
             <section id="recipes-section" class="hidden">
-                <!-- Filtros -->
-                <div class="filters-row">
-                    <button class="filter-btn active" data-filter="all">Todas</button>
-                    <button class="filter-btn" data-filter="original">Originais</button>
-                    <button class="filter-btn" data-filter="custom">Personalizadas</button>
-                    <button class="filter-btn" data-filter="favorite">
-                        <i class="fas fa-star"></i> Favoritas
-                    </button>
-                </div>
-
-                <div class="card animate__animated animate__fadeIn">
+                <div class="filters-row" id="filters-row"></div>
+                <div class="card">
                     <div class="card-header">
-                        <div class="card-title">
-                            <i class="fas fa-book"></i> Receitas
-                        </div>
+                        <div class="card-title"><i class="fas fa-book"></i> Receitas</div>
                         <div class="recipe-count" id="total-count"></div>
                     </div>
-                    <div class="recipe-grid" id="recipes-grid">
-                        <!-- Populated by JavaScript -->
-                    </div>
+                    <div class="recipe-grid" id="recipes-grid"></div>
                 </div>
             </section>
 
-            <!-- Saved Recipes Section -->
+            <!-- Saved -->
             <section id="saved-section" class="hidden">
-                <div class="card animate__animated animate__fadeIn">
+                <div class="card">
                     <div class="card-header">
-                        <div class="card-title">
-                            <i class="fas fa-bookmark"></i> Receitas Salvas
-                        </div>
+                        <div class="card-title"><i class="fas fa-star"></i> Receitas salvas</div>
                         <div class="recipe-count" id="saved-count">0 receitas</div>
                     </div>
-                    <div class="recipe-grid" id="saved-recipes-grid">
-                        <!-- Populated by JavaScript -->
-                    </div>
+                    <div class="recipe-grid" id="saved-recipes-grid"></div>
                 </div>
             </section>
         </main>
     </div>
 
-    <!-- Recipe Result Modal -->
+    <!-- Result Modal -->
     <div class="modal-overlay" id="result-modal">
         <div class="modal">
             <div class="modal-header">
-                <h2 id="modal-recipe-title">
-                    <i class="fas fa-calculator"></i> Receita Calculada
-                </h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="modal-recipe-title"><i class="fas fa-calculator"></i> Receita calculada</h2>
+                <button class="modal-close"><i class="fas fa-xmark"></i></button>
             </div>
             <div class="modal-body">
                 <div class="calculation-info">
-                    <div class="info-item">
-                        <i class="fas fa-balance-scale"></i>
-                        <div>
-                            <div class="info-label">Base</div>
-                            <div class="info-value" id="base-info"></div>
-                        </div>
-                    </div>
-                    <div class="info-item">
-                        <i class="fas fa-clock"></i>
-                        <div>
-                            <div class="info-label">Data</div>
-                            <div class="info-value" id="date-info"></div>
-                        </div>
+                    <div class="info-item"><i class="fas fa-scale-balanced"></i><div><div class="info-label">Base</div><div class="info-value" id="base-info"></div></div></div>
+                    <div class="info-item"><i class="fas fa-clock"></i><div><div class="info-label">Data</div><div class="info-value" id="date-info"></div></div></div>
+                </div>
+                <div class="composition" id="result-composition" style="display:none; margin-top:0; padding-top:0; border-top:none; margin-bottom:18px;">
+                    <div class="composition-label"><span>Proporção calculada</span></div>
+                    <div class="composition-bar"><div class="seg base" id="result-bar-base"></div><div class="seg rest" id="result-bar-rest"></div></div>
+                    <div class="composition-legend">
+                        <span class="item"><span class="dot base"></span><span id="result-legend-base"></span></span>
+                        <span class="item"><span class="dot rest"></span><span id="result-legend-rest"></span></span>
                     </div>
                 </div>
-
                 <div class="table-responsive">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Ingrediente</th>
-                                <th>Quantidade</th>
-                                <th>Unidade</th>
-                            </tr>
-                        </thead>
-                        <tbody id="modal-ingredients-body">
-                            <!-- Populated by JavaScript -->
-                        </tbody>
+                        <thead><tr><th>Ingrediente</th><th>Qtd.</th><th>Un.</th></tr></thead>
+                        <tbody id="modal-ingredients-body"></tbody>
                     </table>
                 </div>
-
                 <div class="button-group">
-                    <button id="print-btn" class="btn btn-secondary btn-sm">
-                        <i class="fas fa-print"></i> Imprimir
-                    </button>
-                    <button id="share-btn" class="btn btn-secondary btn-sm">
-                        <i class="fas fa-share-alt"></i> Compartilhar
-                    </button>
-                    <button id="save-custom-btn" class="btn btn-success btn-sm">
-                        <i class="fas fa-save"></i> Salvar
-                    </button>
+                    <button id="print-btn" class="btn btn-secondary btn-sm"><i class="fas fa-print"></i> Imprimir</button>
+                    <button id="share-btn" class="btn btn-secondary btn-sm"><i class="fas fa-share-nodes"></i> Compartilhar</button>
+                    <button id="save-custom-btn" class="btn btn-success btn-sm"><i class="fas fa-floppy-disk"></i> Salvar</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- View Recipe Modal -->
+    <!-- View Modal -->
     <div class="modal-overlay" id="view-modal">
         <div class="modal">
             <div class="modal-header">
-                <h2 id="view-modal-title">
-                    <i class="fas fa-book-open"></i> Detalhes da Receita
-                </h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="view-modal-title"><i class="fas fa-book-open"></i> Detalhes</h2>
+                <button class="modal-close"><i class="fas fa-xmark"></i></button>
             </div>
             <div class="modal-body">
                 <div class="recipe-meta-info">
                     <span class="recipe-type" id="view-recipe-type"></span>
                     <span class="recipe-ingredients-count" id="view-ingredients-count"></span>
                 </div>
-
-                <div class="ingredient-list" id="view-ingredients-list">
-                    <!-- Populated by JavaScript -->
-                </div>
-
+                <div class="ingredient-list" id="view-ingredients-list"></div>
                 <div class="button-group">
-                    <button id="edit-recipe-btn" class="btn btn-primary">
-                        <i class="fas fa-edit"></i> Editar Receita
-                    </button>
-                    <button id="favorite-recipe-btn" class="btn btn-secondary">
-                        <i class="fas fa-star"></i> Favoritar
-                    </button>
-                    <button id="duplicate-recipe-btn" class="btn btn-outline">
-                        <i class="fas fa-copy"></i> Duplicar
-                    </button>
+                    <button id="edit-recipe-btn" class="btn btn-primary"><i class="fas fa-pen"></i> Editar</button>
+                    <button id="favorite-recipe-btn" class="btn btn-secondary"><i class="fas fa-star"></i> Favoritar</button>
+                    <button id="duplicate-recipe-btn" class="btn btn-outline"><i class="fas fa-copy"></i> Duplicar</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Edit Recipe Modal (Aprimorado) -->
+    <!-- Edit Modal -->
     <div class="modal-overlay" id="edit-modal">
         <div class="modal">
             <div class="modal-header">
-                <h2 id="edit-modal-title">
-                    <i class="fas fa-edit"></i> Editar Receita
-                </h2>
-                <button class="modal-close">&times;</button>
+                <h2 id="edit-modal-title"><i class="fas fa-pen"></i> Editar receita</h2>
+                <button class="modal-close"><i class="fas fa-xmark"></i></button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="edit-recipe-name">
-                        <i class="fas fa-tag"></i> Nome da Receita
-                    </label>
+                    <label for="edit-recipe-name"><i class="fas fa-tag"></i> Nome da receita</label>
                     <input type="text" id="edit-recipe-name" placeholder="Nome da receita">
                 </div>
-
                 <div class="form-group">
-                    <label for="edit-recipe-category">
-                        <i class="fas fa-folder"></i> Categoria
-                    </label>
+                    <label for="edit-recipe-category"><i class="fas fa-folder"></i> Categoria</label>
                     <div class="select-wrapper">
                         <select id="edit-recipe-category">
                             <option value="Pães">Pães</option>
                             <option value="Bolachas">Bolachas</option>
                             <option value="Especiais">Especiais</option>
+                            <option value="Panetone">Panetone</option>
                             <option value="Personalizada">Personalizada</option>
                         </select>
                     </div>
                 </div>
-
                 <div class="section-header">
                     <h3><i class="fas fa-list"></i> Ingredientes</h3>
-                    <button class="btn-icon btn-sm btn-success" id="bulk-add-btn">
-                        <i class="fas fa-plus-circle"></i> Adicionar Vários
-                    </button>
+                    <button class="btn-icon btn-sm btn-success" id="bulk-add-btn" aria-label="Adicionar vários"><i class="fas fa-list-check"></i></button>
                 </div>
-                
                 <div class="ingredient-editor">
                     <div class="ingredient-input-row">
-                        <input type="text" id="ingredient-name" placeholder="Nome do ingrediente" class="input-wrapper">
-                        <input type="number" id="ingredient-amount" placeholder="Quantidade" step="0.001" class="input-wrapper">
+                        <input type="text" id="ingredient-name" placeholder="Nome do ingrediente">
+                        <input type="number" id="ingredient-amount" placeholder="Qtd." step="0.001">
                         <div class="select-wrapper">
                             <select id="ingredient-unit">
                                 <option value="kg">kg</option>
@@ -335,37 +578,20 @@
                                 <option value="xícaras">xícaras</option>
                             </select>
                         </div>
-                        <button id="add-ingredient" class="btn btn-success btn-icon">
-                            <i class="fas fa-plus"></i>
-                        </button>
+                        <button id="add-ingredient" class="btn btn-success btn-icon"><i class="fas fa-plus"></i></button>
                     </div>
                 </div>
-
-                <div class="ingredient-list editable" id="edit-ingredients-list">
-                    <!-- Populated by JavaScript -->
-                </div>
-
-                <div class="form-group">
-                    <label for="base-ingredient">
-                        <i class="fas fa-balance-scale"></i> Ingrediente base para cálculo
-                    </label>
+                <div class="ingredient-list editable" id="edit-ingredients-list"></div>
+                <div class="form-group" style="margin-top:20px;">
+                    <label for="base-ingredient"><i class="fas fa-scale-unbalanced"></i> Ingrediente base para cálculo</label>
                     <div class="select-wrapper">
-                        <select id="base-ingredient">
-                            <!-- Populated by JavaScript -->
-                        </select>
+                        <select id="base-ingredient"></select>
                     </div>
                 </div>
-
                 <div class="button-group">
-                    <button id="save-recipe-btn" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Salvar Alterações
-                    </button>
-                    <button id="delete-recipe-btn" class="btn btn-danger">
-                        <i class="fas fa-trash"></i> Excluir Receita
-                    </button>
-                    <button id="cancel-edit-btn" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Cancelar
-                    </button>
+                    <button id="save-recipe-btn" class="btn btn-primary"><i class="fas fa-floppy-disk"></i> Salvar</button>
+                    <button id="delete-recipe-btn" class="btn btn-danger"><i class="fas fa-trash"></i> Excluir</button>
+                    <button id="cancel-edit-btn" class="btn btn-secondary"><i class="fas fa-xmark"></i> Cancelar</button>
                 </div>
             </div>
         </div>
@@ -375,30 +601,18 @@
     <div class="modal-overlay" id="bulk-modal">
         <div class="modal">
             <div class="modal-header">
-                <h2><i class="fas fa-list-ol"></i> Adicionar Vários Ingredientes</h2>
-                <button class="modal-close">&times;</button>
+                <h2><i class="fas fa-list-check"></i> Adicionar vários ingredientes</h2>
+                <button class="modal-close"><i class="fas fa-xmark"></i></button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="bulk-ingredients">
-                        <i class="fas fa-paste"></i> Cole os ingredientes (um por linha)
-                    </label>
-                    <textarea id="bulk-ingredients" rows="10" placeholder="Exemplo:
-Farinha de trigo 5 kg
-Sal 0.5 kg
-Água 3 litros
-Fermento 0.2 kg"></textarea>
+                    <label for="bulk-ingredients"><i class="fas fa-paste"></i> Cole os ingredientes (um por linha)</label>
+                    <textarea id="bulk-ingredients" rows="8" placeholder="Farinha de trigo 5 kg&#10;Sal 0.5 kg&#10;Água 3 litros&#10;Fermento 0.2 kg"></textarea>
                 </div>
-                <div class="form-group">
-                    <label><i class="fas fa-info-circle"></i> Formato: Nome quantidade unidade</label>
-                </div>
+                <div class="form-group"><label style="font-weight:400; color:var(--ink-soft);"><i class="fas fa-circle-info"></i> Formato: nome quantidade unidade</label></div>
                 <div class="button-group">
-                    <button id="process-bulk-btn" class="btn btn-primary">
-                        <i class="fas fa-magic"></i> Processar
-                    </button>
-                    <button class="btn btn-secondary bulk-modal-close">
-                        <i class="fas fa-times"></i> Cancelar
-                    </button>
+                    <button id="process-bulk-btn" class="btn btn-primary"><i class="fas fa-wand-magic-sparkles"></i> Processar</button>
+                    <button class="btn btn-secondary bulk-modal-close"><i class="fas fa-xmark"></i> Cancelar</button>
                 </div>
             </div>
         </div>
@@ -408,103 +622,55 @@ Fermento 0.2 kg"></textarea>
     <div class="modal-overlay" id="settings-modal">
         <div class="modal">
             <div class="modal-header">
-                <h2><i class="fas fa-cog"></i> Configurações</h2>
-                <button class="modal-close">&times;</button>
+                <h2><i class="fas fa-gear"></i> Configurações</h2>
+                <button class="modal-close"><i class="fas fa-xmark"></i></button>
             </div>
             <div class="modal-body">
                 <div class="settings-section">
                     <h3><i class="fas fa-file-pdf"></i> Exportação</h3>
                     <div class="settings-item">
-                        <div class="settings-info">
-                            <h4>Gerar PDF de Todas as Receitas</h4>
-                            <p>Exporte todas as receitas em um arquivo PDF organizado</p>
-                        </div>
-                        <button id="generate-pdf-btn" class="btn btn-primary">
-                            <i class="fas fa-download"></i> Gerar PDF
-                        </button>
+                        <div class="settings-info"><h4>Gerar PDF de todas as receitas</h4><p>Exporta as receitas base em um PDF organizado</p></div>
+                        <button id="generate-pdf-btn" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> Gerar</button>
                     </div>
                 </div>
-
                 <div class="settings-section">
                     <h3><i class="fas fa-database"></i> Dados</h3>
                     <div class="settings-item">
-                        <div class="settings-info">
-                            <h4>Exportar Dados</h4>
-                            <p>Exporte todas as receitas em formato JSON</p>
-                        </div>
-                        <button id="export-data-btn" class="btn btn-outline">
-                            <i class="fas fa-file-export"></i> Exportar
-                        </button>
+                        <div class="settings-info"><h4>Exportar dados</h4><p>Backup em JSON de receitas, favoritas e histórico</p></div>
+                        <button id="export-data-btn" class="btn btn-outline btn-sm"><i class="fas fa-file-export"></i> Exportar</button>
                     </div>
                     <div class="settings-item">
-                        <div class="settings-info">
-                            <h4>Importar Dados</h4>
-                            <p>Importe receitas de um arquivo JSON</p>
-                        </div>
-                        <input type="file" id="import-file" accept=".json" style="display: none;">
-                        <button id="import-data-btn" class="btn btn-outline">
-                            <i class="fas fa-file-import"></i> Importar
-                        </button>
+                        <div class="settings-info"><h4>Importar dados</h4><p>Restaura um backup em JSON</p></div>
+                        <input type="file" id="import-file" accept=".json" style="display:none;">
+                        <button id="import-data-btn" class="btn btn-outline btn-sm"><i class="fas fa-file-import"></i> Importar</button>
                     </div>
                 </div>
-
                 <div class="settings-section">
                     <h3><i class="fas fa-broom"></i> Limpeza</h3>
                     <div class="settings-item">
-                        <div class="settings-info">
-                            <h4>Limpar Todos os Dados</h4>
-                            <p>Remove todas as receitas personalizadas e cálculos</p>
-                        </div>
-                        <button id="clear-all-btn" class="btn btn-danger">
-                            <i class="fas fa-trash"></i> Limpar Tudo
-                        </button>
+                        <div class="settings-info"><h4>Limpar todos os dados</h4><p>Remove receitas personalizadas, favoritas e histórico</p></div>
+                        <button id="clear-all-btn" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Limpar</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Bottom Navigation Atualizada -->
-    <div class="bottom-nav">
-        <div class="bottom-nav-item active" data-tab="calculator">
-            <i class="fas fa-calculator"></i>
-            <span>Calcular</span>
-        </div>
-        <div class="bottom-nav-item" data-tab="recipes">
-            <i class="fas fa-book"></i>
-            <span>Receitas</span>
-        </div>
-        <div class="bottom-nav-item" id="add-recipe-btn">
-            <div class="add-recipe-icon">
-                <i class="fas fa-plus"></i>
-            </div>
-            <span class="new-receitas">Nova Receita</span>
-        </div>
-        <div class="bottom-nav-item" data-tab="saved">
-            <i class="fas fa-star"></i>
-            <span>Salvas</span>
-        </div>
-        <div class="bottom-nav-item" id="settings-btn">
-            <i class="fas fa-cog"></i>
-            <span>Config</span>
-        </div>
-    </div>
+    <nav class="bottom-nav">
+        <div class="bottom-nav-item active" data-tab="calculator"><i class="fas fa-calculator"></i><span>Calcular</span></div>
+        <div class="bottom-nav-item" data-tab="recipes"><i class="fas fa-book"></i><span>Receitas</span></div>
+        <div class="bottom-nav-item" id="add-recipe-btn"><div class="add-recipe-icon"><i class="fas fa-plus"></i></div><span>Nova</span></div>
+        <div class="bottom-nav-item" data-tab="saved"><i class="fas fa-star"></i><span>Salvas</span></div>
+        <div class="bottom-nav-item" id="settings-nav-btn" data-tab-settings="1"><i class="fas fa-gear"></i><span>Config</span></div>
+    </nav>
 
-    <!-- Toast Notification -->
-    <div class="toast" id="toast">
-        <i class="fas fa-info-circle"></i>
-        <span id="toast-message"></span>
-    </div>
+    <div class="toast" id="toast"><i class="fas fa-circle-info"></i><span id="toast-message"></span></div>
 
-    <!-- Loading Overlay -->
     <div class="loading-overlay" id="loading">
-        <div class="loading-spinner">
-            <i class="fas fa-bread-slice fa-spin"></i>
-        </div>
+        <div class="loading-spinner"><i class="fas fa-bread-slice fa-spin"></i></div>
         <div class="loading-text">Processando...</div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="main.js"></script>
 </body>
 </html>
