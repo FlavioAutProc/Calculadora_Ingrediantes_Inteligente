@@ -38,7 +38,7 @@ const breadRecipes = {
             { name: "Leite em pó", originalAmount: 600, unit: "g" },
             { name: "Sal", originalAmount: 350, unit: "g" },
             { name: "Açúcar", originalAmount: 5, unit: "kg" },
-            { name: "Margarina", originalAmount: 1, unit: "kg" },
+            { name: "Margarina", originalAmount: 1.500, unit: "kg" },
             { name: "Ovos", originalAmount: 3, unit: "kg" },
             { name: "Fermento", originalAmount: 300, unit: "g" }
         ],
